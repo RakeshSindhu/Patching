@@ -1,0 +1,1 @@
+{{ ansible_hostname }},{{ ubuntu_updates.stdout_lines | default([]) | join(',') if ubuntu_updates.changed else rhel_updates.stdout_lines | default([]) | join(',') }}

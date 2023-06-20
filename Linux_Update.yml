@@ -1,0 +1,42 @@
+---
+- name: Update Linux Systems
+  hosts: all
+  become: true
+  tasks:
+    - name: Update Ubuntu systems
+      when: "'Ubuntu' in ansible_distribution"
+      apt:
+        upgrade: dist
+        update_cache: yes
+
+    - name: Update CentOS systems
+      when: "'CentOS' in ansible_distribution"
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Update Oracle Linux systems
+      when: "'OracleLinux' in ansible_distribution"
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Update Red Hat systems
+      when: "'RedHat' in ansible_distribution"
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Check for pending updates
+      shell: >
+        if [ -n "$(apt list --upgradable 2>/dev/null | grep -v "Listing")" ]; then
+            echo "There are pending updates."
+            apt list --upgradable
+        elif [ -n "$(yum list updates --quiet)" ]; then
+            echo "There are pending updates."
+            yum list updates --quiet
+        else
+            echo "No pending updates."
+        fi
+      register: update_status
+      changed_when: false

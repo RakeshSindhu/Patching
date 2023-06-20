@@ -1,0 +1,25 @@
+---
+- name: Update Windows patches
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Check for available updates
+      win_updates:
+        category_names: "*"
+        state: searched
+      register: updates_result
+      changed_when: false
+
+    - name: Install updates if available
+      win_updates:
+        category_names: "*"
+        state: installed
+      when: updates_result.updates | length > 0
+
+    - name: Reboot if updates are installed
+      win_reboot:
+      when: updates_result.updates | length > 0 and updates_result.reboot_required
+
+    - name: Print success message
+      win_shell: echo "Windows updates have been successfully installed."
+      changed_when: false

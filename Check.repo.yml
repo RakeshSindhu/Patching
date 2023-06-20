@@ -1,0 +1,28 @@
+---
+- name: Check current repository on Linux flavors
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Check repository on Debian-based systems
+      command: apt-cache policy
+      register: repository_output1
+      changed_when: false
+      failed_when: false
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+    - name: Check repository on Red Hat-based systems
+      command: yum repolist
+      register: repository_output
+      changed_when: false
+      failed_when: false
+      when: ansible_os_family == "RedHat"
+
+    - name: Print repository name
+      debug:
+        msg: "{{ repository_output.stdout_lines }}"
+      when: ansible_os_family == "RedHat"
+    - name: Print repository name
+      debug:
+        msg: "{{ repository_output1.stdout_lines }}"
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'

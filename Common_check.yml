@@ -1,0 +1,25 @@
+---
+- name: Check for pending updates
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    - name: Check for pending updates
+      command: "apt list --upgradable"
+      register: update_result
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    - name: Display pending updates
+      debug:
+        var: update_result.stdout_lines
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    - name: check for updates (yum)
+      yum: list=updates update_cache=true
+      register: yumoutput
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+    - debug:
+        msg: "{{ yumoutput.results | map(attribute='name') | list }}"
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'

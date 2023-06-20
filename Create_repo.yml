@@ -1,0 +1,27 @@
+---
+- name: Create repository
+  hosts: all
+  become: true
+  vars:
+    repository_name: "my_repository"
+    repository_url: "http://archive.ubuntu.com/ubuntu"
+    repository_name1: "my_repository"
+    repository_url1: "http://example.com"
+  tasks:
+    - name: Add repository for Ubuntu
+      when: ansible_distribution == 'Ubuntu'
+      apt_repository:
+        repo: "deb {{ repository_url }}/{{ repository_name }} focal main"
+        state: present
+        filename: "{{ repository_name }}"
+        update_cache: no
+
+    - name: Add repository for Red Hat
+      when: ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'
+      yum_repository:
+        name: "{{ repository_name1 }}"
+        description: "{{ repository_name1 }}"
+        baseurl: "{{ repository_url1 }}"
+        gpgcheck: no
+        enabled: no
+

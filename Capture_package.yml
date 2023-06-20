@@ -1,0 +1,33 @@
+---
+- name: Capture Pending OS Updates
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Gather pending updates for Ubuntu
+      when: ansible_distribution == 'Ubuntu'
+      become: yes
+      shell: apt list --upgradable
+      register: ubuntu_updates
+
+    - name: Gather pending updates for Red Hat-based distributions
+      when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux', 'OracleLinux']
+      become: yes
+      shell: yum list updates -q
+      register: rhel_updates
+
+    - name: Create Updates directory if it does not exist
+      file:
+        path: /Updates
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Generate updates.csv file
+      local_action:
+        module: template
+        src: /var/lib/awx/projects/Patching/updates.csv.j2
+        dest: /Updates/updates.csv
+      delegate_to: "{{ inventory_hostname }}"
+      run_once: true
